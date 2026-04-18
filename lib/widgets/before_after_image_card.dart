@@ -1,18 +1,21 @@
-import 'dart:io';
-import 'dart:typed_data';
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+
+import 'image_source_widget.dart';
 
 class BeforeAfterImageCard extends StatelessWidget {
   const BeforeAfterImageCard({
     super.key,
     required this.originalImage,
+    required this.originalImageBytes,
     required this.enhancedImageBytes,
     required this.sliderValue,
     required this.onSliderChanged,
   });
 
-  final File? originalImage;
+  final XFile? originalImage;
+  final Uint8List? originalImageBytes;
   final Uint8List? enhancedImageBytes;
   final double sliderValue;
   final ValueChanged<double> onSliderChanged;
@@ -58,8 +61,9 @@ class BeforeAfterImageCard extends StatelessWidget {
                     : Stack(
                         fit: StackFit.expand,
                         children: [
-                          Image.file(
-                            originalImage!,
+                          buildSourceImage(
+                            image: originalImage!,
+                            webImageBytes: kIsWeb ? originalImageBytes : null,
                             fit: BoxFit.cover,
                           ),
                           if (hasEnhancedImage)

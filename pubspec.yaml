@@ -1,5 +1,6 @@
 name: app_ai_1
 description: AI Photo Enhancer App
+version: 1.0.0+1
 
 environment:
   sdk: ">=3.0.0 <4.0.0"
@@ -10,6 +11,8 @@ dependencies:
   image_picker: ^1.0.4
   http: ^1.2.2
   path_provider: ^2.1.4
+  image_gallery_saver: ^2.0.3
+  universal_html: ^2.2.4
   google_fonts: ^6.2.1
 
 dev_dependencies:

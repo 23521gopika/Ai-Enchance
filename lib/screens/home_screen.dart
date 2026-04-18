@@ -1,6 +1,6 @@
-import 'dart:io';
 import 'dart:ui';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
@@ -21,7 +21,8 @@ class _HomeScreenState extends State<HomeScreen> {
   final ImagePicker _picker = ImagePicker();
   final AiService _aiService = AiService();
 
-  File? _originalImage;
+  XFile? _originalImage;
+  Uint8List? _originalImageBytes;
   Uint8List? _enhancedImageBytes;
   bool _isProcessing = false;
   double _comparisonValue = 0.5;
@@ -39,8 +40,13 @@ class _HomeScreenState extends State<HomeScreen> {
         return;
       }
 
+      final Uint8List? pickedImageBytes = kIsWeb
+          ? await pickedFile.readAsBytes()
+          : null;
+
       setState(() {
-        _originalImage = File(pickedFile.path);
+        _originalImage = pickedFile;
+        _originalImageBytes = pickedImageBytes;
         _enhancedImageBytes = null;
         _comparisonValue = 0.5;
       });
@@ -66,14 +72,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   _pickImage(ImageSource.gallery);
                 },
               ),
-              ListTile(
-                leading: const Icon(Icons.camera_alt_outlined),
-                title: const Text('Take a Photo'),
-                onTap: () {
-                  Navigator.pop(context);
-                  _pickImage(ImageSource.camera);
-                },
-              ),
+              if (!kIsWeb)
+                ListTile(
+                  leading: const Icon(Icons.camera_alt_outlined),
+                  title: const Text('Take a Photo'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _pickImage(ImageSource.camera);
+                  },
+                ),
             ],
           ),
         );
@@ -158,11 +165,6 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _isProcessing ? null : _enhanceImage,
-        label: const Text('Quick Enhance'),
-        icon: const Icon(Icons.auto_awesome_rounded),
-      ),
       body: Stack(
         children: [
           const _GradientBackground(),
@@ -172,7 +174,7 @@ class _HomeScreenState extends State<HomeScreen> {
               duration: const Duration(milliseconds: 250),
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
                 child: Column(
                   children: [
                     const AppLogo(),
@@ -190,20 +192,26 @@ class _HomeScreenState extends State<HomeScreen> {
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         color: Colors.white.withValues(alpha: 0.88),
                       ),
+                      textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 18),
-                    _buildGlassActionCard(isDark),
+                    _buildCenteredContent(
+                      child: _buildGlassActionCard(isDark),
+                    ),
                     const SizedBox(height: 16),
-                    SizedBox(
+                    _buildCenteredContent(
+                      child: SizedBox(
                       height: 360,
                       child: BeforeAfterImageCard(
                         originalImage: _originalImage,
+                        originalImageBytes: _originalImageBytes,
                         enhancedImageBytes: _enhancedImageBytes,
                         sliderValue: _comparisonValue,
                         onSliderChanged: (double value) {
                           setState(() => _comparisonValue = value);
                         },
                       ),
+                    ),
                     ),
                   ],
                 ),
@@ -259,7 +267,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   Color(0xFFFF6FD8),
                 ],
                 isPrimary: true,
-                onPressed: _isProcessing ? null : _enhanceImage,
+                onPressed: _isProcessing || _originalImage == null
+                    ? null
+                    : _enhanceImage,
               ),
               const SizedBox(height: 10),
               GradientActionButton(
@@ -269,11 +279,22 @@ class _HomeScreenState extends State<HomeScreen> {
                   Color(0xFF4A7BFF),
                   Color(0xFF00C9FF),
                 ],
-                onPressed: _isProcessing ? null : _saveEnhancedImage,
+                onPressed: _isProcessing || _enhancedImageBytes == null
+                    ? null
+                    : _saveEnhancedImage,
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildCenteredContent({required Widget child}) {
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 560),
+        child: child,
       ),
     );
   }

@@ -65,24 +65,30 @@ class _GradientActionButtonState extends State<GradientActionButton> {
                     ]
                   : null,
             ),
-            child: ElevatedButton.icon(
-              onPressed: widget.onPressed,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.transparent,
-                shadowColor: Colors.transparent,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(22),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: widget.onPressed,
+                icon: Icon(widget.icon, color: Colors.white),
+                label: Text(
+                  widget.label,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.3,
+                  ),
                 ),
-                padding: const EdgeInsets.symmetric(vertical: 16),
-              ),
-              icon: Icon(widget.icon, color: Colors.white),
-              label: Text(
-                widget.label,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.3,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.transparent,
+                  shadowColor: Colors.transparent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(22),
+                  ),
+                  minimumSize: const Size.fromHeight(54),
+                  padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 14),
                 ),
+                iconAlignment: IconAlignment.start,
               ),
             ),
           ),
