@@ -1,27 +1,27 @@
 PODS:
   - Flutter (1.0.0)
-  - image_gallery_saver (2.0.2):
-    - Flutter
   - image_picker_ios (0.0.1):
+    - Flutter
+  - saver_gallery (0.0.1):
     - Flutter
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
-  - image_gallery_saver (from `.symlinks/plugins/image_gallery_saver/ios`)
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
+  - saver_gallery (from `.symlinks/plugins/saver_gallery/ios`)
 
 EXTERNAL SOURCES:
   Flutter:
     :path: Flutter
-  image_gallery_saver:
-    :path: ".symlinks/plugins/image_gallery_saver/ios"
   image_picker_ios:
     :path: ".symlinks/plugins/image_picker_ios/ios"
+  saver_gallery:
+    :path: ".symlinks/plugins/saver_gallery/ios"
 
 SPEC CHECKSUMS:
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
-  image_gallery_saver: 14711d79da40581063e8842a11acf1969d781ed7
   image_picker_ios: e0ece4aa2a75771a7de3fa735d26d90817041326
+  saver_gallery: af2d0c762dafda254e0ad025ef0dabd6506cd490
 
 PODFILE CHECKSUM: 3c63482e143d1b91d2d2560aee9fb04ecc74ac7e
 
