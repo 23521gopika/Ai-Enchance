@@ -131,6 +131,9 @@ class _HomeScreenState extends State<HomeScreen> {
       final String savedPath = await _aiService.saveEnhancedImage(
         _enhancedImageBytes!,
       );
+      if (savedPath.trim().isEmpty) {
+        throw AiServiceException('Image save returned an empty location.');
+      }
       if (!mounted) return;
       _showSnackBar('Enhanced image saved to: $savedPath');
     } on AiServiceException catch (error) {

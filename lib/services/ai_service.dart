@@ -1,14 +1,20 @@
 import 'dart:convert';
+import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 
+import 'ai_service_exception.dart';
 import 'image_save_handler.dart';
+
+export 'ai_service_exception.dart';
 
 class AiService {
   static const String _enhanceUrl =
   'https://clipdrop-api.co/image-upscaling/v1/upscale';
+  static const int _defaultTargetWidth = 1024;
+  static const int _defaultTargetHeight = 1024;
   static const String _apiKey =
       '170bf53d4255fdc66bad6f36dbe116a91d11363101c93c6a7f9e16c83b75d68e77d653bf34ca7e9b178fb16da37cad73';
 
@@ -20,10 +26,14 @@ class AiService {
       }
 
       final String fileName = _fileNameFromPath(imageFile.path);
+      final ({int width, int height}) targetSize =
+          await _resolveTargetSize(imageBytes);
 
       final http.MultipartRequest request =
           http.MultipartRequest('POST', Uri.parse(_enhanceUrl))
             ..headers['x-api-key'] = _apiKey
+            ..fields['target_width'] = targetSize.width.toString()
+            ..fields['target_height'] = targetSize.height.toString()
             ..files.add(
               http.MultipartFile.fromBytes(
                 'image_file',
@@ -35,6 +45,7 @@ class AiService {
       debugPrint(
         '[AiService] Sending enhance request | '
         'url=$_enhanceUrl | file=$fileName | bytes=${imageBytes.length} | '
+        'target=${targetSize.width}x${targetSize.height} | '
         'platform=${kIsWeb ? 'web' : defaultTargetPlatform.name}',
       );
 
@@ -72,6 +83,8 @@ class AiService {
   Future<String> saveEnhancedImage(Uint8List imageBytes) async {
     try {
       return saveImageForCurrentPlatform(imageBytes);
+    } on AiServiceException {
+      rethrow;
     } on UnsupportedError catch (error) {
       throw AiServiceException(error.message ?? 'Saving is not supported.');
     } catch (_) {
@@ -116,6 +129,32 @@ class AiService {
     }
   }
 
+  Future<({int width, int height})> _resolveTargetSize(Uint8List imageBytes) async {
+    ui.ImmutableBuffer? buffer;
+    ui.ImageDescriptor? descriptor;
+
+    try {
+      buffer = await ui.ImmutableBuffer.fromUint8List(imageBytes);
+      descriptor = await ui.ImageDescriptor.encoded(buffer);
+
+      final int width = descriptor.width;
+      final int height = descriptor.height;
+      if (width > 0 && height > 0) {
+        return (width: width, height: height);
+      }
+    } catch (_) {
+      // Fall back to a safe target size when decoding fails.
+    } finally {
+      descriptor?.dispose();
+      buffer?.dispose();
+    }
+
+    return (
+      width: _defaultTargetWidth,
+      height: _defaultTargetHeight,
+    );
+  }
+
   String _fileNameFromPath(String path) {
     if (path.isEmpty) {
       return 'upload.jpg';
@@ -125,13 +164,4 @@ class AiService {
     final String fileName = parts.isNotEmpty ? parts.last : 'upload.jpg';
     return fileName.isEmpty ? 'upload.jpg' : fileName;
   }
-}
-
-class AiServiceException implements Exception {
-  AiServiceException(this.message);
-
-  final String message;
-
-  @override
-  String toString() => message;
 }
